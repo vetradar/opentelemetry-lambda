@@ -1,2 +1,8 @@
 bin/*
 extension.zip
+
+.DS_Store
+
+# ide cruft
+.idea/
+.vscode/

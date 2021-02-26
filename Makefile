@@ -1,5 +1,6 @@
 NAME=opentelemetry-lambda-extension
 REGIONS=${AWS_DEFAULT_REGION}
+ENVIRONMENT=${ENVIRONMENT}
 GIT_HASH=$(shell git rev-parse --short HEAD)
 S3_BUCKET=${S3_DEPLOYMENT_BUCKET}
 AWS_ACCOUNT=$(shell aws sts get-caller-identity | jq -r ".Account")
@@ -16,12 +17,12 @@ publish:
 	chmod +x bin/extensions/$(NAME)
 	cd bin && zip -r $(GIT_HASH).zip extensions/
 	for region in $(REGIONS); do \
-		aws --region $$region s3 cp ./bin/$(GIT_HASH).zip s3://$(S3_DEPLOYMENT_BUCKET)-$$region/; \
+		aws --region $$region s3 cp ./bin/$(GIT_HASH).zip s3://$(S3_DEPLOYMENT_BUCKET)-$$region-$(ENVIRONMENT)/; \
 		aws lambda publish-layer-version \
 			--layer-name "$(NAME)" \
 			--description "OpenTelemetry Lambda Extension" \
 			--region $$region \
-			--content S3Bucket=$(S3_DEPLOYMENT_BUCKET)-$$region,S3Key=$(GIT_HASH).zip \
+			--content S3Bucket=$(S3_DEPLOYMENT_BUCKET)-$$region-$(ENVIRONMENT),S3Key=$(GIT_HASH).zip \
 			--compatible-runtimes nodejs12.x nodejs14.x python3.6 python3.7 python3.8 ruby2.5 ruby2.7 java8 java8.al2 java11 dotnetcore3.1 provided.al2 \
 			--no-cli-pager \
 			--output text ; \

@@ -1,13 +1,14 @@
 name: Publish
 
 on:
-  deployment:
+  push:
     branches:
-      - main
+      - master
+      - staging
+      - production
   workflow_dispatch:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -28,32 +29,98 @@ jobs:
           path: |
             bin/extensions/
 
-  publish:
+
+  publish_master:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.MASTER_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.MASTER_AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      - uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.MASTER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MASTER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: build
-        path: |
-          bin/extensions/
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: |
+            bin/extensions/
 
-    - name: Publish
-      run: make publish
-      env:
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+      - name: Publish
+        run: make publish
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
 
-    - name: Permissions
-      run: make permissions
-      env:
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: Permissions
+        run: make permissions
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+
+  publish_staging:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/staging' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: |
+            bin/extensions/
+
+      - name: Publish
+        run: make publish
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+
+      - name: Permissions
+        run: make permissions
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+
+  publish_production:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/production' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PRODUCTION_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PRODUCTION_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: |
+            bin/extensions/
+
+      - name: Publish
+        run: make publish
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+
+      - name: Permissions
+        run: make permissions
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

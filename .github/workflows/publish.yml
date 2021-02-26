@@ -31,7 +31,7 @@ jobs:
 
 
   publish_master:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +64,7 @@ jobs:
 
 
   publish_staging:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/staging' }}
+    if: ${{ github.ref == 'refs/heads/staging' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -97,7 +97,7 @@ jobs:
 
 
   publish_production:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/production' }}
+    if: ${{ github.ref == 'refs/heads/production' }}
     needs: build
     runs-on: ubuntu-latest
     steps:

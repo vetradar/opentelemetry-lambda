@@ -31,7 +31,7 @@ jobs:
 
 
   publish_master:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +55,7 @@ jobs:
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+          ENVIRONMENT: master
 
       - name: Permissions
         run: make permissions
@@ -63,7 +64,7 @@ jobs:
 
 
   publish_staging:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/staging' }}
+    if: ${{ github.ref == 'refs/heads/staging' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -87,6 +88,7 @@ jobs:
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+          ENVIRONMENT: staging
 
       - name: Permissions
         run: make permissions
@@ -95,7 +97,7 @@ jobs:
 
 
   publish_production:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/production' }}
+    if: ${{ github.ref == 'refs/heads/production' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -119,6 +121,7 @@ jobs:
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           S3_DEPLOYMENT_BUCKET: ${{ secrets.S3_DEPLOYMENT_BUCKET }}
+          ENVIRONMENT: production
 
       - name: Permissions
         run: make permissions

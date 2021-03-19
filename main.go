@@ -18,6 +18,7 @@ var (
 	extensionName   = filepath.Base(os.Args[0]) // extension name has to match the filename
 	extensionClient = extension.NewClient(os.Getenv("AWS_LAMBDA_RUNTIME_API"))
 	printPrefix     = fmt.Sprintf("[%s]", extensionName)
+	shouldPrintLog  = os.Getenv("LOG_LEVEL") == "debug"
 )
 
 func main() {
@@ -41,8 +42,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	println(printPrefix, "Register response:", prettyPrint(res))
-
+	if shouldPrintLog {
+		println(printPrefix, "Register response:", prettyPrint(res))
+	}
 	// Will block until shutdown event is received or cancelled via the context.
 	processEvents(ctx, collector)
 }
@@ -53,14 +55,18 @@ func processEvents(ctx context.Context, collector *InProcessCollector) {
 		case <-ctx.Done():
 			return
 		default:
-			println(printPrefix, "Waiting for event...")
+			if shouldPrintLog {
+				println(printPrefix, "Waiting for event...")
+			}
 			res, err := extensionClient.NextEvent(ctx)
 			if err != nil {
 				println(printPrefix, "Error:", err)
 				println(printPrefix, "Exiting")
 				return
 			}
-			println(printPrefix, "Received event:", prettyPrint(res))
+			if shouldPrintLog {
+				println(printPrefix, "Received event:", prettyPrint(res))
+			}
 			// Exit if we receive a SHUTDOWN event
 			if res.EventType == extension.Shutdown {
 				collector.stop() // TODO: handle return values
